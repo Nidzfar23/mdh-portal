@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MDH Employee Portal</title>
+<meta name="description" content="MDH forms and web apps in one place.">
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/favicon.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="theme-color" content="#121B57">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MDH Portal">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<style>
+  :root {
+    --navy: #121B57;
+    --bg: #eef0f7;
+    --surface: #ffffff;
+    --text: #141a3a;
+    --muted: #5b6285;
+    --line: #d9dcec;
+    --accent: #121B57;
+    --focus: #3b4bd1;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0a0e2b;
+      --surface: #131a4a;
+      --text: #eceffc;
+      --muted: #a2a9d1;
+      --line: #262f6b;
+      --accent: #9fb0ff;
+      --focus: #9fb0ff;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0a0e2b;
+    --surface: #131a4a;
+    --text: #eceffc;
+    --muted: #a2a9d1;
+    --line: #262f6b;
+    --accent: #9fb0ff;
+    --focus: #9fb0ff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.4;
+    -webkit-text-size-adjust: 100%;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Header */
+  .top {
+    background: var(--navy);
+    color: #fff;
+    padding: calc(env(safe-area-inset-top, 0px) + 18px) 16px 22px;
+  }
+  .top-inner {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .badge {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #fff;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+  .badge img { width: 50px; height: 50px; display: block; }
+  .top h1 { margin: 0; font-size: 1.35rem; letter-spacing: -0.01em; line-height: 1.15; }
+  .top p { margin: 3px 0 0; font-size: 0.9rem; color: #c3c9ee; }
+
+  .wrap { max-width: 960px; margin: 0 auto; padding: 18px 16px 40px; }
+
+  .search {
+    width: 100%;
+    font: inherit;
+    font-size: 16px; /* stops iOS zooming in on focus */
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    margin-bottom: 18px;
+  }
+  .search:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+
+  /* Install hint */
+  .install {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font-size: 0.92rem;
+  }
+  .install.show { display: flex; }
+  .install span { flex: 1; }
+  .install button {
+    font: inherit;
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .install .go { background: var(--navy); color: #fff; }
+  .install .x { background: transparent; color: var(--muted); }
+  .install button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* Groups and cards */
+  .group { margin: 0 0 26px; }
+  .group h2 { font-size: 0.95rem; margin: 0 0 10px; color: var(--muted); font-weight: 600; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+  }
+  .card {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 16px;
+    min-height: 84px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 6px solid var(--c, var(--accent));
+    border-radius: 12px;
+    color: inherit;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card:active { transform: scale(0.98); }
+  .card:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .icon { font-size: 1.8rem; line-height: 1; flex: none; }
+  .card h3 { margin: 0; font-size: 1.05rem; }
+  .card p { margin: 3px 0 0; font-size: 0.88rem; color: var(--muted); }
+
+  .note { color: var(--muted); padding: 20px 0; }
+  .status { margin-top: 8px; font-size: 0.8rem; color: var(--muted); text-align: center; }
+
+  @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { .card:active { transform: none; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="badge"><img src="icons/logo.png" alt="MDH logo"></div>
+    <div>
+      <h1>MDH Employee Portal</h1>
+      <p>Your forms and apps in one place</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="install" id="install">
+    <span id="installText">Add MDH Portal to your home screen.</span>
+    <button class="go" id="installBtn" type="button" hidden>Install</button>
+    <button class="x" id="installClose" type="button" aria-label="Dismiss">Not now</button>
+  </div>
+
+  <input class="search" id="search" type="search" placeholder="Search forms and apps" aria-label="Search forms and apps" autocomplete="off">
+  <div id="content"></div>
+  <div class="status" id="status"></div>
+</main>
+
+<script>
+/* ==================================================================
+   HOW TO MANAGE YOUR CARDS
+
+   OPTION A: Edit the FORMS list below, then re-upload the file.
+   OPTION B: Use a Google Sheet (no re-upload needed):
+     1. Make a sheet with these headers in row 1:
+          title | description | url | icon | category | color | active
+        (only title and url are required. "active" = no hides a card.)
+     2. File > Share > Publish to web > choose the sheet tab and
+        "Comma-separated values (.csv)" > Publish. Copy the link.
+     3. Paste that link between the quotes in SHEET_CSV_URL below.
+   If SHEET_CSV_URL is filled in, the Sheet is used. If it can't be
+   reached, the app falls back to the last saved list, then to FORMS.
+   ================================================================== */
+const SHEET_CSV_URL = "";
+
+const FORMS = [
+  { title: "Attendance",      desc: "Daily check-in",         url: "https://forms.gle/REPLACE_ME_1", icon: "📝", category: "Daily" },
+  { title: "Incident Report", desc: "Report a problem",       url: "https://forms.gle/REPLACE_ME_2", icon: "⚠️", category: "Daily", color: "#b45309" },
+  { title: "Leave Request",   desc: "Request time off",       url: "https://forms.gle/REPLACE_ME_3", icon: "🌴", category: "Requests" },
+  { title: "Supply Request",  desc: "Order supplies",         url: "https://forms.gle/REPLACE_ME_4", icon: "📦", category: "Requests" },
+  { title: "Staff Directory", desc: "Find a colleague",       url: "https://example.com/REPLACE_ME_5", icon: "👥", category: "Tools" },
+  { title: "Feedback",        desc: "Tell us what you think", url: "https://forms.gle/REPLACE_ME_6", icon: "💬", category: "Tools" }
+];
+
+/* ---------- code below: no need to edit ---------- */
+
+const CACHE_KEY = "mdh-portal-cards";
+const content = document.getElementById("content");
+const search = document.getElementById("search");
+const statusEl = document.getElementById("status");
+let cards = FORMS;
+
+function safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function safeSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = "", inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQ) {
+      if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; }
+      else if (ch === '"') inQ = false;
+      else field += ch;
+    } else if (ch === '"') inQ = true;
+    else if (ch === ",") { row.push(field); field = ""; }
+    else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      row.push(field); field = "";
+      if (row.some(c => c.trim() !== "")) rows.push(row);
+      row = [];
+    } else field += ch;
+  }
+  row.push(field);
+  if (row.some(c => c.trim() !== "")) rows.push(row);
+  return rows;
+}
+
+function rowsToCards(rows) {
+  if (rows.length < 2) return [];
+  const head = rows[0].map(h => h.trim().toLowerCase());
+  const col = (...names) => head.findIndex(h => names.includes(h));
+  const iTitle = col("title", "name");
+  const iDesc = col("description", "desc");
+  const iUrl = col("url", "link");
+  const iIcon = col("icon", "emoji");
+  const iCat = col("category", "group");
+  const iColor = col("color", "colour");
+  const iActive = col("active", "show");
+  const get = (r, i) => (i >= 0 && r[i] ? r[i].trim() : "");
+  return rows.slice(1).map(r => ({
+    title: get(r, iTitle),
+    desc: get(r, iDesc),
+    url: get(r, iUrl),
+    icon: get(r, iIcon),
+    category: get(r, iCat),
+    color: get(r, iColor),
+    active: get(r, iActive).toLowerCase()
+  })).filter(c => c.title && /^https?:\/\//i.test(c.url) && !["no", "false", "0", "hide"].includes(c.active));
+}
+
+function render(filter) {
+  const q = (filter || "").trim().toLowerCase();
+  const items = cards.filter(f => (f.title + " " + (f.desc || "") + " " + (f.category || "")).toLowerCase().includes(q));
+  content.innerHTML = "";
+  if (!items.length) {
+    const p = document.createElement("p");
+    p.className = "note";
+    p.textContent = q ? "Nothing matches your search." : "No cards yet. Add one to your list or Google Sheet.";
+    content.appendChild(p);
+    return;
+  }
+  const groups = {};
+  items.forEach(f => { (groups[f.category || ""] = groups[f.category || ""] || []).push(f); });
+  Object.keys(groups).forEach(name => {
+    const section = document.createElement("section");
+    section.className = "group";
+    if (name) { const h = document.createElement("h2"); h.textContent = name; section.appendChild(h); }
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    groups[name].forEach(f => {
+      const a = document.createElement("a");
+      a.className = "card";
+      a.href = f.url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      if (f.color && /^#[0-9a-f]{3,8}$/i.test(f.color)) a.style.setProperty("--c", f.color);
+      const icon = document.createElement("div");
+      icon.className = "icon";
+      icon.textContent = f.icon || "📄";
+      const body = document.createElement("div");
+      const t = document.createElement("h3");
+      t.textContent = f.title;
+      body.appendChild(t);
+      if (f.desc) { const p = document.createElement("p"); p.textContent = f.desc; body.appendChild(p); }
+      a.appendChild(icon);
+      a.appendChild(body);
+      grid.appendChild(a);
+    });
+    section.appendChild(grid);
+    content.appendChild(section);
+  });
+}
+
+async function load() {
+  render("");
+  if (!SHEET_CSV_URL) return;
+  statusEl.textContent = "Updating list…";
+  try {
+    const res = await fetch(SHEET_CSV_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const list = rowsToCards(parseCSV(await res.text()));
+    if (!list.length) throw new Error("empty");
+    cards = list;
+    safeSet(CACHE_KEY, JSON.stringify(list));
+    statusEl.textContent = "";
+  } catch (e) {
+    const saved = safeGet(CACHE_KEY);
+    if (saved) {
+      try { cards = JSON.parse(saved); } catch (err) {}
+      statusEl.textContent = "Offline. Showing your last saved list.";
+    } else {
+      statusEl.textContent = "Couldn't load the Google Sheet. Showing the built-in list.";
+    }
+  }
+  render(search.value);
+}
+
+search.addEventListener("input", e => render(e.target.value));
+load();
+
+/* ---------- install hint ---------- */
+const installBox = document.getElementById("install");
+const installBtn = document.getElementById("installBtn");
+const installText = document.getElementById("installText");
+const installClose = document.getElementById("installClose");
+const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+let deferredPrompt = null;
+
+if (!isStandalone && !safeGet("mdh-install-dismissed")) {
+  if (isIOS) {
+    installText.textContent = "To install: tap the Share button, then “Add to Home Screen”.";
+    installBox.classList.add("show");
+  }
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installText.textContent = "Install MDH Portal on your phone.";
+    installBtn.hidden = false;
+    installBox.classList.add("show");
+  });
+}
+installBtn.addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBox.classList.remove("show");
+});
+installClose.addEventListener("click", () => {
+  safeSet("mdh-install-dismissed", "1");
+  installBox.classList.remove("show");
+});
+window.addEventListener("appinstalled", () => installBox.classList.remove("show"));
+
+/* ---------- service worker (makes it installable and available offline) ---------- */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
