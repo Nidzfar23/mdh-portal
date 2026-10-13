@@ -159,9 +159,104 @@
 
   @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
   @media (prefers-reduced-motion: reduce) { .card:active { transform: none; } }
+
+  /* Splash screen */
+  .splash {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: var(--navy);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    padding: env(safe-area-inset-top, 0px) 24px env(safe-area-inset-bottom, 0px);
+    text-align: center;
+    transition: opacity 0.5s ease, visibility 0.5s;
+    cursor: pointer;
+  }
+  .splash.hide { opacity: 0; visibility: hidden; }
+  .splash-logo {
+    position: relative;
+    width: 132px;
+    height: 132px;
+    border-radius: 50%;
+    background: #fff;
+    display: grid;
+    place-items: center;
+    animation: logo-in 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+  }
+  .splash-logo img { width: 132px; height: 132px; display: block; border-radius: 50%; }
+  .splash-logo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    animation: ring 1.4s ease-out 0.7s both;
+  }
+  .splash-name {
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    animation: rise 0.6s ease-out 0.7s both;
+  }
+  .splash-sub {
+    margin-top: -14px;
+    font-size: 0.95rem;
+    color: #c3c9ee;
+    animation: rise 0.6s ease-out 0.95s both;
+  }
+  @keyframes logo-in {
+    from { opacity: 0; transform: scale(0.55); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes ring {
+    from { opacity: 0.9; transform: scale(1); }
+    to   { opacity: 0; transform: scale(1.7); }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .splash-logo, .splash-logo::after, .splash-name, .splash-sub { animation: none; }
+    .splash-logo::after { display: none; }
+    .splash { transition: none; }
+  }
 </style>
 </head>
 <body>
+
+<div class="splash" id="splash" role="presentation" aria-hidden="true">
+  <div class="splash-logo"><img src="icons/logo.png" alt=""></div>
+  <div class="splash-name">MDH Employee Portal</div>
+  <div class="splash-sub">Your forms and apps in one place</div>
+</div>
+<script>
+/* Splash screen: shows for about 2 seconds, tap to skip.
+   SPLASH_ONCE_PER_VISIT = true  -> only once each time the app is opened
+   SPLASH_ONCE_PER_VISIT = false -> every time the page loads
+   Set SPLASH_MS to change how long it stays (in milliseconds). */
+(function () {
+  var SPLASH_ONCE_PER_VISIT = true;
+  var SPLASH_MS = 2000;
+  var el = document.getElementById("splash");
+  function done() {
+    el.classList.add("hide");
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 600);
+  }
+  var seen = false;
+  try { seen = SPLASH_ONCE_PER_VISIT && sessionStorage.getItem("mdh-splash") === "1"; } catch (e) {}
+  if (seen) { el.parentNode.removeChild(el); return; }
+  try { sessionStorage.setItem("mdh-splash", "1"); } catch (e) {}
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var timer = setTimeout(done, reduce ? 700 : SPLASH_MS);
+  el.addEventListener("click", function () { clearTimeout(timer); done(); });
+})();
+</script>
 
 <header class="top">
   <div class="top-inner">
